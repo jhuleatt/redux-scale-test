@@ -1,8 +1,11 @@
 /* @flow */
+import R from 'ramda';
+
 // ------------------------------------
 // Constants
 // ------------------------------------
 export const COUNTER_INCREMENT = 'COUNTER_INCREMENT';
+export const MAKE_BIG_JSON_BLOB = 'MAKE_BIG_JSON_BLOB';
 
 // ------------------------------------
 // Actions
@@ -15,40 +18,53 @@ export const increment = (value: number = 1): Action => ({
   payload: value
 });
 
-// This is a thunk, meaning it is a function that immediately
-// returns a function for lazy evaluation. It is incredibly useful for
-// creating async actions, especially when combined with redux-thunk!
-// NOTE: This is solely for demonstration purposes. In a real application,
-// you'd probably want to dispatch an action of COUNTER_DOUBLE and let the
-// reducer take care of this logic.
-export const doubleAsync = (): Function => {
-  return (dispatch: Function, getState: Function): Promise => {
-    return new Promise((resolve: Function): void => {
-      setTimeout(() => {
-        dispatch(increment(getState().counter));
-        resolve();
-      }, 200);
-    });
-  };
-};
+export const makeBigJSONBlob = (): Action => ({
+  type: MAKE_BIG_JSON_BLOB
+});
 
 export const actions = {
-  increment,
-  doubleAsync
+  increment
 };
+
+function addChildren (n) {
+  let obj = {};
+
+  if (n === 0) {
+    obj.prop = 'The text';
+  } else {
+    for (var i = 0; i < 100; i++) {
+      obj[i] = addChildren(n-1);
+    }
+  }
+
+  return obj;
+}
 
 // ------------------------------------
 // Action Handlers
 // ------------------------------------
 const ACTION_HANDLERS = {
-  [COUNTER_INCREMENT]: (state: number, action: {payload: number}): number => state + action.payload
+  [COUNTER_INCREMENT]: (state: Object, action: {payload: number}): Object => {
+    const newState = Object.assign({}, state);//R.clone(state);
+    newState.count += action.payload;
+    console.log(newState.count);
+    return newState;
+  },
+  [MAKE_BIG_JSON_BLOB]: (state: Object, action): Object => {
+    const newState = R.clone(state);
+    newState.bigBlob = addChildren(3);
+    console.log(newState.bigBlob);
+    return newState;
+  }
 };
 
 // ------------------------------------
 // Reducer
 // ------------------------------------
-const initialState = 0;
-export default function counterReducer (state: number = initialState, action: Action): number {
+const initialState = {
+  count: 0
+};
+export default function counterReducer (state: Object = initialState, action: Action): number {
   const handler = ACTION_HANDLERS[action.type];
 
   return handler ? handler(state, action) : state;

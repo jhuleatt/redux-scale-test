@@ -1,7 +1,7 @@
 /* @flow */
 import React, { PropTypes } from 'react';
 import { connect } from 'react-redux';
-import { increment, doubleAsync } from '../../redux/modules/counter';
+import { increment, makeBigJSONBlob } from '../../redux/modules/counter';
 import DuckImage from './Duck.jpg';
 import classes from './HomeView.scss';
 
@@ -14,8 +14,8 @@ import classes from './HomeView.scss';
 // Sorry Windows users :(.
 type Props = {
   counter: number,
-  doubleAsync: Function,
-  increment: Function
+  increment: Function,
+  makeBigJSONBlob: Function
 };
 
 // We avoid using the `@connect` decorator on the class definition so
@@ -24,9 +24,16 @@ type Props = {
 export class HomeView extends React.Component<void, Props, void> {
   static propTypes = {
     counter: PropTypes.number.isRequired,
-    doubleAsync: PropTypes.func.isRequired,
-    increment: PropTypes.func.isRequired
+    increment: PropTypes.func.isRequired,
+    makeBigJSONBlob: PropTypes.func.isRequired
   };
+
+  shouldComponentUpdate (nextProps, nextState) {
+    console.log('NxtState', nextState);
+    console.log('nxtprops', nextProps);
+
+    return nextProps.counter !== this.props.counter;
+  }
 
   render () {
     return (
@@ -48,8 +55,8 @@ export class HomeView extends React.Component<void, Props, void> {
           Increment
         </button>
         {' '}
-        <button className='btn btn-default' onClick={this.props.doubleAsync}>
-          Double (Async)
+        <button className='btn btn-danger' onClick={this.props.makeBigJSONBlob}>
+          Make Gigantor Store
         </button>
       </div>
     );
@@ -57,9 +64,9 @@ export class HomeView extends React.Component<void, Props, void> {
 }
 
 const mapStateToProps = (state) => ({
-  counter: state.counter
+  counter: state.counter.count
 });
 export default connect((mapStateToProps), {
   increment: () => increment(1),
-  doubleAsync
+  makeBigJSONBlob
 })(HomeView);
